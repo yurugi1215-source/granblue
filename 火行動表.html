@@ -1,33 +1,7 @@
-<!--
-Narrative Plan:
-1. Header: Title of the infographic.
-2. Overview Section: Introduction text, followed by two key charts (Donut Chart for action types, Bar Chart for ability usage by character) to summarize the data.
-3. Turn-by-Turn Walkthrough: A vertical timeline visualizing each turn (1 to 14+) as a distinct card, showing omens, actions, and notes.
-4. Footer: Simple footer.
---><!--
-Visualization Choices:
-1. Data: Turn-by-Turn Process Flow (Turns 1-14+).
-   Goal: Organize.
-   Visualization: Vertical Timeline (Flow Chart).
-   Method: Structured HTML/CSS with Tailwind (e.g., cards, lists). NO SVG/Mermaid JS used.
-2. Data: Action Type Breakdown (Ability, Summon, Attack).
-   Goal: Inform (Show composition).
-   Visualization: Donut Chart.
-   Method: Chart.js (Canvas). Labels are short, no wrapping needed. Tooltip config included. NO SVG used.
-3. Data: Ability Usage per Character.
-   Goal: Compare (Rank categories).
-   Visualization: Bar Chart.
-   Method: Chart.js (Canvas). Labels are short, no wrapping needed. Tooltip config included. NO SVG used.
-4. Data: Omens (e.g., "CT Omen", "9999M DMG Omen").
-   Goal: Inform (Highlight key data).
-   Visualization: Styled Text/Tags.
-   Method: HTML/CSS (Tailwind) with Unicode characters (e.g., ⚠️) for emphasis within the timeline cards. NO SVG used.
-
-Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this file.
---><!-- Color Palette Chosen: "Energetic & Playful" (#FF6B6B, #FFD166, #06D6A0, #118AB2, #073B4C) --><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-R-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ヴェルサシア火行動表</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,65 +12,96 @@ Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this file.
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
             background-color: #f0f4f8; 
         }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px; 
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px; 
-            max-height: 400px;
+        
+        /* ターン選択ボタン */
+        .turn-button {
+            transition: all 0.2s ease-in-out;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
+        .turn-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            top: 24px;
-            left: -31px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #118AB2; 
-            border: 4px solid #f0f4f8;
-            z-index: 10;
+        .turn-button-danger {
+            background-color: #fff1f2;
+            border: 1px solid #EF476F;
+            color: #EF476F;
         }
-        .timeline-line {
-            position: absolute;
-            top: 24px;
-            left: -22px;
-            width: 2px;
-            height: 100%;
-            background-color: #cbd5e1;
-            z-index: 5;
+        .turn-button-danger:hover {
+            background-color: #EF476F;
+            color: white;
         }
-        .timeline-item:last-child .timeline-line {
-            display: none;
+        .turn-button-caution {
+            background-color: #fffbeb;
+            border: 1px solid #FFD166;
+            color: #b48a28;
         }
+        .turn-button-caution:hover {
+            background-color: #FFD166;
+            color: #073B4C;
+        }
+
+        /* モーダル（ポップアップ） */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+        }
+        .modal-active .modal-content {
+            transform: translateY(0);
+        }
+
+        /* アクションリスト (モーダル内) */
         .action-list li {
             position: relative;
-            padding-left: 28px;
-            margin-bottom: 8px;
+            padding-left: 44px; /* アイコン分のスペースを確保 */
+            margin-bottom: 12px;
+            min-height: 32px; /* アイコンの高さに合わせる */
+            display: flex;
+            align-items: center;
         }
-        .action-list li::before {
-            content: attr(data-step);
+
+        /* アイコンの基本スタイル */
+        .action-icon {
             position: absolute;
             left: 0;
-            top: 1px;
-            width: 20px;
-            height: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background-color: #e0f7fa;
-            color: #118AB2;
-            font-weight: 700;
-            font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            flex-shrink: 0;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(0,0,0,0.1); /* 境界線 */
         }
+        
+        /* --- 画像アイコン --- */
+        .icon-shujinkou { 
+            background-image: url('https://prd-game-a-granbluefantasy.akamaized.net/assets/img_mid/sp/assets/leader/talk/311303_sw_0_01.png'); 
+        }
+        .icon-yuel { 
+            background-image: url('https://prd-game-a1-granbluefantasy.akamaized.net/assets/img_mid/sp/assets/npc/s/3040580000_01.jpg'); 
+        }
+        .icon-essel { 
+            background-image: url('https://prd-game-a1-granbluefantasy.akamaized.net/assets/img_mid/sp/assets/npc/s/3040039000_04.jpg'); 
+        }
+        .icon-savilbara { 
+            background-image: url('https://prd-game-a1-granbluefantasy.akamaized.net/assets/img_mid/sp/assets/npc/s/3040490000_01.jpg'); 
+        }
+
+        /* --- イニシャルアイコン --- */
+        .icon-summon { background-color: #555; } /* 召喚 */
+        .icon-fc { background-color: #F78C6B; } /* FC */
+        .icon-ability { background-color: #9a9a9a; } /* アビリティ */
+        .icon-attack { background-color: #2a9d8f; } /* 攻撃 */
     </style>
     <script>
         tailwind.config = {
@@ -106,7 +111,7 @@ Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this file.
                         primary: '#118AB2',
                         secondary: '#06D6A0',
                         accent: '#FFD166',
-                        danger: '#FF6B6B',
+                        danger: '#EF476F', 
                         dark: '#073B4C',
                         lightBg: '#f0f4f8',
                     }
@@ -117,220 +122,44 @@ Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this file.
 </head>
 <body class="bg-lightBg text-dark">
 
+    <!-- コンテナ -->
     <div class="container mx-auto p-4 md:p-8">
         
         <header class="text-center mb-12">
             <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">ヴェルサシア火行動表</h1>
         </header>
 
-        <section>
-            <h2 class="text-3xl font-bold text-dark text-center mb-8">ターン別行動フロー</h2>
-            <div class="relative max-w-4xl mx-auto pl-8">
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6">
-                        <h3 class="text-2xl font-bold text-primary mb-4">1T</h3>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">ユエル:</span> 2</li>
-                            <li data-step="2"><span class="font-semibold text-dark">エッセル:</span> 2</li>
-                            <li data-step="3"><span class="font-semibold text-dark">エッセル:</span> 3</li>
-                            <li data-step="4"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="5"><span class="font-semibold text-dark">主人公:</span> 式神</li>
-                            <li data-step="6"><span class="font-semibold text-dark">サビルバラ:</span> 1</li>
-                            <li data-step="7"><span class="font-semibold text-dark">サビルバラ:</span> 3</li>
-                            <li data-step="8"><span class="font-semibold text-dark">ユエル:</span> 1</li>
-                            <li data-step="9"><span class="font-semibold text-dark">ユエル:</span> 3</li>
-                            <li data-step="10"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="11"><span class="font-semibold text-dark">主人公:</span> 式神</li>
-                            <li data-step="12"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6">
-                        <h3 class="text-2xl font-bold text-primary mb-4">2T</h3>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-accent-dark">アグニス召喚</span> (備考: ゲージ石と合体はダメ)</li>
-                            <li data-step="2"><span class="font-semibold text-dark">主人公:</span> 天地開闢</li>
-                            <li data-step="3"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="4"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="5"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-                
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6">
-                        <h3 class="text-2xl font-bold text-primary mb-4">3T</h3>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">主人公:</span> 1</li>
-                            <li data-step="2"><span class="font-bold text-secondary">攻撃</span> (備考: エッセル1を使わない)</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6">
-                        <h3 class="text-2xl font-bold text-primary mb-4">4T</h3>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">エッセル:</span> 1 (備考: 1回目で破壊の試練解除)</li>
-                            <li data-step="2"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="3"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-danger">
-                        <h3 class="text-2xl font-bold text-primary mb-2">5T</h3>
-                        <p class="text-lg font-semibold text-danger mb-4">⚠️ CT予兆</p>
-                        <p class="text-gray-600 mb-4">備考: どちらも打つアビは変わらない</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="2"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="3"><span class="font-semibold text-dark">ユエル:</span> 2</li>
-                            <li data-step="4"><span class="font-semibold text-dark">主人公:</span> 式神</li>
-                            <li data-step="5"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6">
-                        <h3 class="text-2xl font-bold text-primary mb-2">6T</h3>
-                        <p class="text-lg font-semibold text-gray-700 mb-4">CT予兆なし</p>
-                        <p class="text-gray-600 mb-4">備考: 90になるのを待つ / アビリティ使用なし</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-danger">
-                        <h3 class="text-2xl font-bold text-primary mb-2">7T</h3>
-                        <p class="text-lg font-semibold text-danger mb-4">⚠️ 9999万ダメ予兆</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-accent-dark">000表召喚</span></li>
-                            <li data-step="2"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="3"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="4"><span class="font-semibold text-dark">サビルバラ:</span> 3</li>
-                            <li data-step="5"><span class="font-semibold text-dark">主人公:</span> 式神</li>
-                            <li data-step="6"><span class="font-semibold text-dark">主人公:</span> ディスペル</li>
-                            <li data-step="7"><span class="font-bold text-secondary">FC</span></li>
-                            <li data-step="8"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-danger">
-                        <h3 class="text-2xl font-bold text-primary mb-2">8T</h3>
-                        <p class="text-lg font-semibold text-danger mb-4">⚠️ 6回奥義予兆</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-accent-dark">アグニス召喚</span></li>
-                            <li data-step="2"><span class="font-semibold text-dark">主人公:</span> 天地開闢</li>
-                            <li data-step="3"><span class="font-semibold text-dark">サビルバラ:</span> 2</li>
-                            <li data-step="4"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="5"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="6"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-danger">
-                        <h3 class="text-2xl font-bold text-primary mb-2">9T</h3>
-                        <p class="text-lg font-semibold text-danger mb-4">⚠️ FC、80ヒット予兆</p>
-                        <p class="text-gray-600 mb-4">備考: 赤青どちらもG50待機</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">エッセル:</span> 4</li>
-                            <li data-step="2"><span class="font-semibold text-dark">エッセル:</span> 3</li>
-                            <li data-step="3"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="4"><span class="font-semibold text-dark">エッセル:</span> 1</li>
-                            <li data-step="5"><span class="font-semibold text-dark">サビルバラ:</span> 3</li>
-                            <li data-step="6"><span class="font-semibold text-dark">ユエル:</span> 3 (備考: 待機中、火傷が切れそうになったら)</li>
-                            <li data-step="7"><span class="font-semibold text-dark">ユエル:</span> 2 (備考: ユエル3を打ったら)</li>
-                            <li data-step="8"><span class="font-bold text-secondary">攻撃</span> (備考: Genesisゲージが50になってから)</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-danger">
-                        <h3 class="text-2xl font-bold text-primary mb-2">10T</h3>
-                        <p class="text-lg font-semibold text-danger mb-4">⚠️ G50浄土予兆</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">主人公以外:</span> 全アビリティ使用</li>
-                            <li data-step="2"><span class="font-bold text-secondary">攻撃</span> (備考: 他の属性が突入してから)</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-accent">
-                        <h3 class="text-2xl font-bold text-primary mb-2">11T</h3>
-                        <p class="text-lg font-semibold text-accent-dark mb-4">⚠️ 課題（四王天など）</p>
-                        <p class="text-gray-600 mb-4">基本: 課題を見つつアビ最小限で攻撃</p>
-                        <p class="text-gray-600 mb-4"><span class="font-bold text-danger">※注意:</span> 特にTA3回課題が来た場合は、<span class="font-semibold text-dark">主人公1</span>のみ使用して攻撃（よくあるミス）</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-accent">
-                        <h3 class="text-2xl font-bold text-primary mb-2">12T</h3>
-                        <p class="text-lg font-semibold text-accent-dark mb-4">⚠️ 課題（四王天など）</p>
-                        <p class="text-gray-600 mb-4">基本: 課題を見つつアビ最小限で攻撃</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-danger">
-                        <h3 class="text-2xl font-bold text-primary mb-2">13T</h3>
-                        <p class="text-lg font-semibold text-danger mb-4">⚠️ CT予兆</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">アビリティ使用</span> (備考: 最低限のアビリティを使って解除)</li>
-                            <li data-step="2"><span class="font-bold text-secondary">攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="timeline-item relative mb-8">
-                    <div class="timeline-line"></div>
-                    <div class="bg-white rounded-lg shadow-xl p-6 border-l-4 border-gray-500">
-                        <h3 class="text-2xl font-bold text-primary mb-2">14T~</h3>
-                        <p class="text-lg font-semibold text-gray-700 mb-4">アドリブ</p>
-                        <p class="text-gray-600 mb-4"><span class="font-bold text-danger">最重要注意点:</span> 「もし次のTにTA3回課題を提示してきたら解除できるかどうかを考える」</p>
-                        <p class="text-gray-600 mb-4">これ以外は意外となんとかなる。</p>
-                        <ol class="action-list list-none space-y-2">
-                            <li data-step="1"><span class="font-semibold text-dark">アビリティ使用 / 攻撃</span></li>
-                        </ol>
-                    </div>
-                </div>
-
+        <!-- 固定ムーブセクション (1-10T) -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-dark text-center mb-8">固定ムーブ (1-10T)</h2>
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
+                <!-- ターンボタンがここに動的に挿入されます -->
+                <button data-turn="1" class="turn-button bg-white shadow-md rounded-lg p-4 font-bold text-lg text-primary">1T</button>
+                <button data-turn="2" class="turn-button bg-white shadow-md rounded-lg p-4 font-bold text-lg text-primary">2T</button>
+                <button data-turn="3" class="turn-button bg-white shadow-md rounded-lg p-4 font-bold text-lg text-primary">3T</button>
+                <button data-turn="4" class="turn-button bg-white shadow-md rounded-lg p-4 font-bold text-lg text-primary">4T</button>
+                <button data-turn="5" class="turn-button turn-button-danger shadow-md rounded-lg p-4 font-bold text-lg">5T ⚠️</button>
+                <button data-turn="6" class="turn-button bg-white shadow-md rounded-lg p-4 font-bold text-lg text-primary">6T</button>
+                <button data-turn="7" class="turn-button turn-button-danger shadow-md rounded-lg p-4 font-bold text-lg">7T ⚠️</button>
+                <button data-turn="8" class="turn-button turn-button-danger shadow-md rounded-lg p-4 font-bold text-lg">8T ⚠️</button>
+                <button data-turn="9" class="turn-button turn-button-danger shadow-md rounded-lg p-4 font-bold text-lg">9T ⚠️</button>
+                <button data-turn="10" class="turn-button turn-button-danger shadow-md rounded-lg p-4 font-bold text-lg">10T ⚠️</button>
             </div>
         </section>
 
+        <!-- アドリブフェーズセクション (11T~) -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-dark text-center mb-8">アドリブフェーズ (11T~)</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                <button data-turn="11" class="turn-button turn-button-caution shadow-md rounded-lg p-4 font-bold text-lg">11T ⚠️</button>
+                <button data-turn="12" class="turn-button turn-button-caution shadow-md rounded-lg p-4 font-bold text-lg">12T ⚠️</button>
+                <button data-turn="13" class="turn-button turn-button-danger shadow-md rounded-lg p-4 font-bold text-lg">13T ⚠️</button>
+                <button data-turn="14" class="turn-button bg-white shadow-md rounded-lg p-4 font-bold text-lg text-primary">14T~</button>
+            </div>
+        </section>
+
+
+        <!-- 編成情報セクション -->
         <section class="mt-12 pt-8 border-t border-gray-300">
             <h2 class="text-3xl font-bold text-dark text-center mb-8">編成情報</h2>
             <div class="flex flex-wrap justify-center gap-4">
@@ -354,18 +183,250 @@ Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this file.
         </footer>
 
     </div>
+    <!-- /コンテナ -->
+
+
+    <!-- モーダル（ポップアップ） -->
+    <div id="turn-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <!-- オーバーレイ -->
+        <div class="modal-overlay fixed inset-0 bg-black opacity-50" data-close-modal></div>
+        
+        <!-- コンテンツ -->
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto z-10 p-6 relative">
+            
+            <!-- 閉じるボタン -->
+            <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700" data-close-modal>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- モーダルヘッダー -->
+            <h3 id="modal-turn-title" class="text-3xl font-bold text-primary mb-2"></h3>
+            <p id="modal-premonition" class="text-xl font-semibold text-danger mb-4"></p>
+            
+            <!-- モーダルボディ -->
+            <div>
+                <h4 class="text-xl font-bold text-dark mb-3">使用アビリティ</h4>
+                <ul id="modal-action-list" class="action-list list-none space-y-2">
+                    <!-- アクションがここに動的に挿入されます -->
+                </ul>
+                <p id="modal-notes" class="text-gray-600 mt-4 text-sm bg-gray-100 p-3 rounded-md"></p>
+            </div>
+        </div>
+    </div>
+
 
     <script>
+        // ターンごとのデータ
+        // アイコンクラス: icon-shujinkou, icon-yuel, icon-essel, icon-savilbara, icon-summon, icon-fc, icon-ability
+        const turnData = {
+            1: {
+                title: "1T",
+                premonition: null,
+                notes: "アビリティ使用後、攻撃",
+                actions: [
+                    { char: 'yuel', iconClass: 'icon-yuel', abilities: '2, 1, 3' },
+                    { char: 'essel', iconClass: 'icon-essel', abilities: '2, 3, 1, 1' },
+                    { char: 'shujinkou', iconClass: 'icon-shujinkou', abilities: '式神, 式神' },
+                    { char: 'savilbara', iconClass: 'icon-savilbara', abilities: '1, 3' }
+                ]
+            },
+            2: {
+                title: "2T",
+                premonition: null,
+                notes: "アグニス召喚 (ゲージ石と合体はダメ)",
+                actions: [
+                    { char: 'summon', iconClass: 'icon-summon', text: 'アグニス召喚' },
+                    { char: 'shujinkou', iconClass: 'icon-shujinkou', abilities: '天地開闢' },
+                    { char: 'essel', iconClass: 'icon-essel', abilities: '1, 1' }
+                ]
+            },
+            3: {
+                title: "3T",
+                premonition: null,
+                notes: "エッセル1を使わない",
+                actions: [
+                    { char: 'shujinkou', iconClass: 'icon-shujinkou', abilities: '1' }
+                ]
+            },
+            4: {
+                title: "4T",
+                premonition: null,
+                notes: "エッセル1 (1回目で破壊の試練解除)",
+                actions: [
+                    { char: 'essel', iconClass: 'icon-essel', abilities: '1, 1' }
+                ]
+            },
+            5: {
+                title: "5T",
+                premonition: "⚠️ CT予兆",
+                notes: "どちらも打つアビは変わらない",
+                actions: [
+                    { char: 'essel', iconClass: 'icon-essel', abilities: '1, 1' },
+                    { char: 'yuel', iconClass: 'icon-yuel', abilities: '2' },
+                    { char: 'shujinkou', iconClass: 'icon-shujinkou', abilities: '式神' }
+                ]
+            },
+            6: {
+                title: "6T",
+                premonition: "CT予兆なし",
+                notes: "90になるのを待つ / アビリティ使用なしで攻撃",
+                actions: []
+            },
+            7: {
+                title: "7T",
+                premonition: "⚠️ 9999万ダメ予兆",
+                notes: null,
+                actions: [
+                    { char: 'summon', iconClass: 'icon-summon', text: '000表召喚' },
+                    { char: 'essel', iconClass: 'icon-essel', abilities: '1, 1' },
+                    { char: 'savilbara', iconClass: 'icon-savilbara', abilities: '3' },
+                    { char: 'shujinkou', iconClass: 'icon-shujinkou', abilities: '式神, ディスペル' },
+                    { char: 'fc', iconClass: 'icon-fc', text: 'FC発動' }
+                ]
+            },
+            8: {
+                title: "8T",
+                premonition: "⚠️ 6回奥義予兆",
+                notes: null,
+                actions: [
+                    { char: 'summon', iconClass: 'icon-summon', text: 'アグニス召喚' },
+                    { char: 'shujinkou', iconClass: 'icon-shujinkou', abilities: '天地開闢' },
+                    { char: 'savilbara', iconClass: 'icon-savilbara', abilities: '2' },
+                    { char: 'essel', iconClass: 'icon-essel', abilities: '1, 1' }
+                ]
+            },
+            9: {
+                title: "9T",
+                premonition: "⚠️ FC、80ヒット予兆",
+                notes: "赤青どちらもG50待機。\n待機中、火傷が切れそうになったらユエル3。\nユエル3を打ったらユエル2。\nGenesisゲージが50になってから攻撃。",
+                actions: [
+                    { char: 'essel', iconClass: 'icon-essel', abilities: '4, 3, 1, 1' },
+                    { char: 'savilbara', iconClass: 'icon-savilbara', abilities: '3' },
+                    { char: 'yuel', iconClass: 'icon-yuel', abilities: '3 (火傷切れそうなら)' },
+                    { char: 'yuel', iconClass: 'icon-yuel', abilities: '2 (ユエル3使用後)' }
+                ]
+            },
+            10: {
+                title: "10T",
+                premonition: "⚠️ G50浄土予兆",
+                notes: "他の属性が突入してから攻撃",
+                actions: [
+                    { char: 'ability', iconClass: 'icon-ability', text: '主人公以外: 全アビリティ使用' }
+                ]
+            },
+            11: {
+                title: "11T",
+                premonition: "⚠️ 課題（四王天など）",
+                notes: "基本: 課題を見つつアビ最小限で攻撃。\n※注意: 特にTA3回課題が来た場合は、主人公1のみ使用して攻撃（よくあるミス）",
+                actions: [
+                    { char: 'ability', iconClass: 'icon-ability', text: '状況に応じてアビリティ使用' },
+                    { char: 'shujinkou', iconClass: 'icon-shujinkou', abilities: '1 (TA3回課題時)' }
+                ]
+            },
+            12: {
+                title: "12T",
+                premonition: "⚠️ 課題（四王天など）",
+                notes: "基本: 課題を見つつアビ最小限で攻撃",
+                actions: [
+                    { char: 'ability', iconClass: 'icon-ability', text: '状況に応じてアビリティ使用' }
+                ]
+            },
+            13: {
+                title: "13T",
+                premonition: "⚠️ CT予兆",
+                notes: "最低限のアビリティを使って解除",
+                actions: [
+                    { char: 'ability', iconClass: 'icon-ability', text: '最低限のアビリティ使用' }
+                ]
+            },
+            14: {
+                title: "14T~",
+                premonition: "アドリブ",
+                notes: "最重要注意点: 「もし次のTにTA3回課題を提示してきたら解除できるかどうかを考える」。\nこれ以外は意外となんとかなる。",
+                actions: [
+                    { char: 'ability', iconClass: 'icon-ability', text: '状況に応じて判断' }
+                ]
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
-            
+            const modal = document.getElementById('turn-modal');
+            const turnButtons = document.querySelectorAll('.turn-button');
+            const closeButtons = document.querySelectorAll('[data-close-modal]');
+
+            const modalTitle = document.getElementById('modal-turn-title');
+            const modalPremonition = document.getElementById('modal-premonition');
+            const modalNotes = document.getElementById('modal-notes');
+            const modalActionList = document.getElementById('modal-action-list');
+
+            const openModal = (turnId) => {
+                const data = turnData[turnId];
+                if (!data) return;
+
+                // データをモーダルに設定
+                modalTitle.textContent = data.title;
+                
+                if (data.premonition) {
+                    modalPremonition.textContent = data.premonition;
+                    modalPremonition.classList.remove('hidden');
+                } else {
+                    modalPremonition.textContent = '';
+                    modalPremonition.classList.add('hidden');
+                }
+
+                if (data.notes) {
+                    // \n を <br> に変換して改行を反映
+                    modalNotes.innerHTML = data.notes.replace(/\n/g, '<br>');
+                    modalNotes.classList.remove('hidden');
+                } else {
+                    modalNotes.textContent = '';
+                    modalNotes.classList.add('hidden');
+                }
+
+                // アクションリストを生成
+                modalActionList.innerHTML = '';
+                if (data.actions.length > 0) {
+                    data.actions.forEach(action => {
+                        const li = document.createElement('li');
+                        let content = '';
+                        // text があればそちらを優先、なければ abilities を表示
+                        if (action.text) {
+                            content = action.text;
+                        } else if (action.abilities) {
+                            content = `<span class="font-semibold text-lg">${action.abilities}</span>`;
+                        }
+                        li.innerHTML = `<span class="action-icon ${action.iconClass}">${action.char === 'summon' || action.char === 'fc' || action.char === 'ability' ? action.char.toUpperCase().substring(0,2) : ''}</span> ${content}`;
+                        modalActionList.appendChild(li);
+                    });
+                } else {
+                    modalActionList.innerHTML = '<li>特になし</li>';
+                }
+
+                // モーダルを表示
+                modal.classList.remove('hidden');
+                modal.classList.add('modal-active');
+            };
+
+            const closeModal = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('modal-active');
+            };
+
+            // ターンボタンのイベントリスナー
+            turnButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const turnId = button.dataset.turn;
+                    openModal(turnId);
+                });
+            });
+
+            // 閉じるボタンのイベントリスナー
+            closeButtons.forEach(button => {
+                button.addEventListener('click', closeModal);
+            });
         });
     </script>
 
 </body>
 </html>
-
-
-
-
-
 
